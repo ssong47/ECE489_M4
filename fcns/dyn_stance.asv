@@ -1,0 +1,91 @@
+function dXdt = dyn_stance(t,X,p)
+global GRFz 
+global u_control
+global counter 
+global t_control
+
+params = p.params;
+tTD = p.tTD;            % touchdown time
+ptTD = p.ptTD;          % touchdown toe position
+Tst = p.Tst;
+
+q = X(1:4);
+dq = X(5:8);
+
+De = fcn_De(q,params);
+Ce = fcn_Ce(q,dq,params);
+Ge = fcn_Ge(q,params);
+Be = fcn_Be(q,params);
+J = fcn_J_toe(q,params);
+Ts = [0;0;0;2*fcn_Ts(q,params)];
+
+% Holonomic constraints
+Jhc = fcn_Jhc(q,ptTD,params);
+dJhc = fcn_dJhc(q,dq,ptTD,params);
+
+%% Controller
+% Feedforward force
+s = (t - tTD) / Tst;        % stance phase parametrization s = [0, 1]
+% Force profile using Bezier polynomials
+F = polyval_bz([0 0 160 0 0], s);
+
+%Joint-level control
+Jc_HIP = fcn_J_toe_HIP(q,params);
+
+k_y = 0.1;
+
+IactH = params(48)*params(49)^2;
+IactK = params(48)*params(50)^2;
+
+% Accounting for coupling due to inertia matrix
+M_task = pinv(Jc_HIP)'*diag([IactH, IactK])*pinv(Jc_HIP);
+u = -Jc_HIP'*M_task*[k_y*F; F];    %Torques of joints 3 (hip) and 4 (knee)
+    
+BH = params(51)*params(52)/params(53)*params(49)^2;
+BK = params(51)*params(52)/params(53)*params(50)^2;
+
+% Gravity Compensation + Damping Compensation + Spring Compensations
+u = u + Ge(3:4) + diag([BH,BK])*dq(3:4) - [0;2*fcn_Ts(q,params)];
+
+u(1) = u(1)/Be(3,1);
+u(2) = u(2)/Be(4,2);
+
+% Trying Saturation (Uncomment code 
+saturate = 20;
+
+if abs(u(1)) > saturate
+    u(1) = sign(u(1))*saturate;
+end
+
+if abs(u(2)) > saturate
+    u(2) = sign(u(2))*saturate;
+end
+
+
+%For plotting control input
+counter = counter+1;
+u_control(counter,1) = u(1);
+u_control(counter,2) = u(2);
+t_control(counter) = t;
+
+% Solve the linear system:
+% De * ddq + Ce * dq + Ge = J' * GRF + Be * u (4 eqns)
+% Jhc * ddq + dJhc * dq = 0 (2 eqns)
+% [De  -Jhc'] * [ddq] = [Be*u - Ce*dq - Ge]
+% [Jhc  0   ]   [GRF]   [-dJhc*dq         ]
+% unknowns: ddq(4x1), GRF(3x1) 
+% control: u(2x1)
+Amat = [De -Jhc'; 
+        Jhc zeros(2,2)];
+bvec = [Be*u + Ts - Ce*dq - Ge; 
+        -dJhc*dq];
+
+ddqu = Amat \ bvec;
+ddq = ddqu(1:4);
+GRF = ddqu(5:6);
+
+GRFz = GRF(end); %Vertical component of ground reaction force
+dXdt = [dq; ddq];
+
+
+
