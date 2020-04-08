@@ -78,7 +78,7 @@ ylabel('\tau_K')
 view(0,90);   % change to top view
 
 %% 1c
-syms theta3 theta4 tau_H tau_K a b c d real
+syms theta3 theta4 tau_H tau_K real
 
 %params value
 L_H = 0.096;
