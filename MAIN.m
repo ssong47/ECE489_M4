@@ -1,29 +1,24 @@
 % Hopping leg with boom
 % Author: Yanran Ding and Joao Ramos 
-% Last modified: 2020/03/05
-
-global GRFz
-global u_control
-global counter
-global t_control
-global torque_spring
-
-u_control = zeros(1000,2);
-t_control = zeros(1000,1);
-counter = 0;
-torque_spring = zeros(1000,1);
-
+% Last modified: 2020/04/02
 clc
+clear all
 close all
+
 addpath gen
 addpath fcns
 
+global Fz
+
+fprintf('------ ME446 Milestone 4 -------\n')
+fprintf('Initializing ..............\n')
+
 % --- parameters ---
 p = get_params;     % Getting physical parameters of the robot
-Nstep = 10;          % number of desired hops
+Nstep = 5;          % number of desired hops
 
 % Initial condition
-q0 = [0; 0; pi/3; -90*pi/180]; %Joint angles
+q0 = [0; 0; pi/3; -pi/2]; %Joint angles
 dq0 = [0; 0; 0; 0];       %Joint velocities
 ic = [q0; dq0];
 
@@ -32,106 +27,71 @@ ic = [q0; dq0];
 
 % Recording
 tstart = 0;
-tfinal = 100;   %Maximum simulation time
+tfinal = 2*Nstep;   %Maximum simulation time
 tout = tstart;
 Xout = ic';
-
+Uout = [0,0];
+Fout = [0,0];
 
 for istep = 1:Nstep
     %% aerial phase
-    options = odeset('Events',@(t,X)event_touchDown(t,X,p),'MaxStep',1e-3);
-
+    options = odeset('Events',@(t,X)event_touchDown(t,X,p));
     [t,X] = ode45(@(t,X)dyn_aerial(t,X,p),[tstart, tfinal], Xout(end,:),options);
+    Fz = 1;
 
     p.tTD = t(end);                             % touchdown time
     p.ptTD = fcn_p_toe(X(end,1:4),p.params);    % touchdown toe pos
-    GRFz = 1;
 
+    % log
     nt = length(t);
     tout = [tout; t(2:nt)];
     Xout = [Xout; X(2:nt,:)];
+    [~,u,F] = dyn_aerial(t,X,p);
+    Uout = [Uout;u(2:nt,:)];
+    Fout = [Fout;F(2:nt,:)];
     tstart = tout(end);
-
+    
     %% Impact map (hard contact)
     X_prev = Xout(end,:);
     X_post = fcn_impactMap(X_prev,p);
     Xout(end,:) = X_post';
 
     %% stance phase
-    options = odeset('Events',@(t,X)event_liftOff(t,X,p),'MaxStep',1e-3);
-
+    options = odeset('Events',@(t,X)event_liftOff(t,X,p));
     [t,X] = ode45(@(t,X)dyn_stance(t,X,p),[tstart, tfinal], Xout(end,:), options);
 
     nt = length(t);
     tout = [tout; t(2:nt)];
     Xout = [Xout; X(2:nt,:)];
+    [~,u,F] = dyn_stance(t,X,p);
+    Uout = [Uout;u(2:nt,:)];
+    Fout = [Fout;F(2:nt,:)];
     tstart = tout(end);
 
+    fprintf('%d out of %d steps complete!\n',istep,Nstep)
 end
-
-%% For plotting torque input
-figure
-plot(t_control, .2793*u_control(:,1));
-title('Torque Input to Hip joint', 'FontSize', 15);
-xlabel('Time (s)', 'FontSize', 15);
-ylabel('Torque (Nm)', 'FontSize', 15);
-
-figure
-plot(t_control, 0.2991*u_control(:,2));
-title('Torque input to Knee joint', 'FontSize', 15);
-xlabel('Time (s)', 'FontSize', 15);
-ylabel('Torque (Nm)', 'FontSize', 15);
-
-%% For plotting control input
-
-figure
-plot(t_control, u_control(:,1));
-title('Control Input to Hip joint', 'FontSize', 15);
-xlabel('Time (s)', 'FontSize', 15);
-ylabel('Control Input (V)', 'FontSize', 15);
-
-figure
-plot(t_control, u_control(:,2));
-title('Contol input to Knee joint', 'FontSize', 15);
-xlabel('Time (s)', 'FontSize', 15);
-ylabel('Control Input (V)', 'FontSize', 15);
-ylim([-30 30])
-
-
-%% For Plotting Spring Torque
-
-figure
-plot(t_control, torque_spring);
-title('Spring Torque', 'FontSize', 15);
-xlabel('Time (s)', 'FontSize', 15);
-ylabel('Torque (Nm)', 'FontSize', 15);
-
-%% Plotting joint angles
-
-joint_angle = [];
-joint_angle(1,:) = Xout(:,1);
-joint_angle(2,:) = Xout(:,2);
-joint_angle(3,:) = Xout(:,3);
-joint_angle(4,:) = Xout(:,4);
-
-figure(6)
-lw = 1.0;
-plot(tout, joint_angle(1,:), 'Linewidth',lw);
-hold on;
-plot(tout, joint_angle(2,:), 'Linewidth',lw);
-plot(tout, joint_angle(3,:), 'Linewidth',lw);
-plot(tout, joint_angle(4,:), 'Linewidth',lw);
-xlabel('Time (sec)');
-ylabel('$\theta$ (rad)','Interpreter','Latex');
-legend('\theta_1','\theta_2','\theta_3','\theta_4','Interpreter','Latex');
+fprintf('Simulation Complete!\n')
 
 %% Visualing the motion
-animateRobot(tout,Xout,p)
+[t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
+
+%% Part 2(a,c) - Plotting Velocity (L_B * theta_1)
+theta_dot_1 = Xout(:,5);
+plot_speed(tout, theta_dot_1);
 
 
+%% Part 2(b,d,e) - Compute average speed, electrical power, total cost of transport
+[avg_velocity, max_velocity] = compute_velocity(theta_dot_1);
 
+theta_dot_hip = Xout(:,7);
+theta_dot_knee = Xout(:,8);
 
+voltage_hip = Uout(:,1);
+voltage_knee = Uout(:,2);
 
+avg_power = compute_power(voltage_hip, theta_dot_hip, voltage_knee, theta_dot_knee);
+
+cost_transport = compute_cost_transport(theta_dot_1, avg_power);
 
 
 
