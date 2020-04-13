@@ -1,7 +1,7 @@
 function p = get_params()
 
-p.Tst = 0.3;        % stance time
-p.N_animate = 20;   % for animation time smoothness
+p.Tst = 0.2;        % stance time
+p.N_animate = 30;   % for animation time smoothness
 
 % % parameters for matrix calculations
 % [g, HB, LB, DB, LH, DK, LK, M1, M2, M3, M4, ...
@@ -37,57 +37,42 @@ rx4 = 0.001;
 ry4 = 0.020;
 rz4 = 0.139;
 
-Jx1 = 0.00064; %Components of inertia tensor of link 1 in link frame
-Jy1 = 0.00062; 
-Jz1 = 0.00017; 
-
-Jx2 = 0.00077; 
-Jy2 = 0.02262; 
-Jz2 = 0.02306; 
-
-Jx3 = 0.00046; 
-Jy3 = 0.00108; 
-Jz3 = 0.00071; 
-
-Jx4 = 0.00039; 
-Jy4 = 0.00034; 
-Jz4 = 0.00008;
-
-Jxy1 = 0.00000000;
+Jxx1 = 0.00064578;
+Jyy1 = 0.00062034; 
+Jzz1 = 0.00017348; 
+Jxy1 = 0;
 Jxz1 = 0.00000593;
-Jyz1 = 0.00000000;
+Jyz1 = 0;
 
+Jxx2 = 0.00076962;
+Jyy2 = 0.02261852;
+Jzz2 = 0.02306310;
 Jxy2 = 0.00116033;
-Jxz2 = -0.00001650;
+Jxz2 = -0.0000165;
 Jyz2 = 0.00000022;
 
+Jxx3 = 0.00045696;
+Jyy3 = 0.00108532;
+Jzz3 = 0.00070883;
 Jxy3 = -0.00000525;
 Jxz3 = 0.00026769;
 Jyz3 = -0.00000651;
 
+Jxx4 = 0.00039564;
+Jyy4 = 0.00033576;
+Jzz4 = 0.00008091;
 Jxy4 = -0.00000437;
 Jxz4 = 0.00000366;
 Jyz4 = 0.00003475;
 
-Irotor = 0.000007;
-NH = 26.9;
-NK = 28.8;
-Kv = 0.0186;
-KT = 0.0135;
-Rw = 1.3;
-
-%Spring Parameters
-K_spring = 1.67e3; %Sprin Stiffness in N/m
-L0 = 80; %Natural Length of spring in mm
-%Spring ends physical parameters (mm)
-a = 32; b = 32;
-c = 52; d = 46;
-offset = 0.384832950610572; 
-
-
 p.params = [g, HB, LB, DB, LH, DK, LK, M1, M2, M3, M4, ...
     rx1, ry1, rz1, rx2, ry2, rz2, rx3, ry3, rz3, rx4, ry4, rz4, ...
-    Jx1, Jy1, Jz1, Jx2, Jy2, Jz2, Jx3, Jy3, Jz3, Jx4, Jy4, Jz4, ...
-    Jxy1, Jxz1, Jyz1, Jxy2, Jxz2, Jyz2, ...
-    Jxy3, Jxz3, Jyz3, Jxy4, Jxz4, Jyz4, ...
-    Irotor, NH, NK, Kv, KT, Rw, K_spring, L0, a, b, c, d, offset];
+    Jxx1, Jyy1, Jzz1, Jxy1, Jxz1, Jyz1,...
+    Jxx2, Jyy2, Jzz2, Jxy2, Jxz2, Jyz2,...
+    Jxx3, Jyy3, Jzz3, Jxy3, Jxz3, Jyz3,...
+    Jxx4, Jyy4, Jzz4, Jxy4, Jxz4, Jyz4];
+    
+    
+    
+    
+    

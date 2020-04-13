@@ -1,13 +1,14 @@
 function [zeroCrossing,isterminal,direction] = event_liftOff(t,X,p)
 
-global GRFz
+global Fz
+
 Tst = p.Tst;
 tTD = p.tTD;
 
 % zeroCrossing =  t - tTD - Tst;
-zeroCrossing =  GRFz;
+zeroCrossing =  Fz;
 isterminal   =  1;
-direction    =  -1;
+direction    =  1;
 
 
 

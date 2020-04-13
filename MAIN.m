@@ -75,23 +75,3 @@ fprintf('Simulation Complete!\n')
 %% Visualing the motion
 [t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
 
-%% Part 2(a,c) - Plotting Velocity (L_B * theta_1)
-theta_dot_1 = Xout(:,5);
-plot_speed(tout, theta_dot_1);
-
-
-%% Part 2(b,d,e) - Compute average speed, electrical power, total cost of transport
-[avg_velocity, max_velocity] = compute_velocity(theta_dot_1);
-
-theta_dot_hip = Xout(:,7);
-theta_dot_knee = Xout(:,8);
-
-voltage_hip = Uout(:,1);
-voltage_knee = Uout(:,2);
-
-avg_power = compute_power(voltage_hip, theta_dot_hip, voltage_knee, theta_dot_knee);
-
-cost_transport = compute_cost_transport(theta_dot_1, avg_power);
-
-
-

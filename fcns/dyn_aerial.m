@@ -1,55 +1,58 @@
-function dXdt = dyn_aerial(t,X,p)
-
-global u_control
-global counter 
-global t_control
-global torque_spring
+function [dXdt,u,F] = dyn_aerial(t,X,p)
 
 params = p.params;
-q = X(1:4); %joint positions
-dq = X(5:8);    %joint velocities
 
-De = fcn_De(q,params); %inertia matrix
-Ce = fcn_Ce(q,dq,params); %Coriolis matrix
-Ge = fcn_Ge(q,params); %gravity vector
-Be = fcn_Be(q,params); %actuation selection matrix
-Ts = [0;0;0;2*fcn_Ts(q,params)]; 
+[m,n] = size(X);
+if n == 8
+    X = X';
+end
 
-% swing controller
-qd = [pi/3; -90*pi/180];     % desired joint position
-q1 = q(3);
-q2 = q(4);
-dq1 = dq(3);
-dq2 = dq(4);
+N = size(X,2);
+u = zeros(N,2);
+F = zeros(N,2);
+dXdt = zeros(size(X,1),N);
+for ii = 1:N
+    q = X(1:4,ii);                 %joint positions
+    dq = X(5:8,ii);                %joint velocities
 
-% joint PD control during aerial phase
-u = [5*(qd(1)-q1) + .2*(0-dq1);...
-     5*(qd(2)-q2) + .2*(0-dq2)];
+    De = fcn_De(q,params);      %inertia matrix
+    Ce = fcn_Ce(q,dq,params);   %Coriolis matrix
+    Ge = fcn_Ge(q,params);      %gravity vector
+    Be = fcn_Be(q,params);      %actuation selection matrix
+    J_h2f_b = fcn_J_h2f_b(q,params);
+    
 
-% Compensation for spring
-u = u - Ts(3:4); 
- 
-u(1) = u(1)/Be(3,1);
-u(2) = u(2)/Be(4,2);
+    % swing controller
+    qd = [pi/3; -pi*0.65];     % desired joint position
+    q1 = q(3);q2 = q(4);
+    dq1 = dq(3);dq2 = dq(4);
 
-% Trying Saturation
-saturate = 20;
-
-% if abs(u(1)) > saturate
-%     u(1) = sign(u(1))*saturate;
-% end
+    % joint PD control during aerial phase
+    u_ = [20*(qd(1)-q1) + 1*(0-dq1);...
+          20*(qd(2)-q2) + 1*(0-dq2)];
+    F_sw = J_h2f_b(2:3,3:4)' \ u_;
+%     % swing controller
+%     Kp = diag(800*[1 1]);
+%     Kd = diag(5*[1 1]);
+%     Krh = 0.1;          % constant for raibert hopper
+%     vx = dq(1) * 0.44;
+%     p_h2f_b_d = [Krh * vx;-0.15];   % swing foot position
+%     p_h2f_b = fcn_p_h2f_b(q,params);
+%     J_h2f_b = fcn_J_h2f_b(q,params);
+%     v_h2f_b = J_h2f_b * dq;
 % 
-% if abs(u(2)) > saturate
-%     u(2) = sign(u(2))*saturate;
-% end
+%     F_sw = Kp * (p_h2f_b_d - p_h2f_b(2:3)) + Kd * (-v_h2f_b(2:3));
+%     u_ = J_h2f_b(2:3,3:4)' * F_sw;
+    u(ii,:) = u_';
+    F(ii,:) = F_sw';
 
-%For plotting control input
-counter = counter+1;
-u_control(counter,1) = u(1);
-u_control(counter,2) = u(2);
-t_control(counter) = t;
-torque_spring(counter) = Ts(4);
+    % spring effect
+    tau_s = -0.0242 * q(4) + 0.0108;
+    v_taus = [0;0;0;2*tau_s];
 
-ddq = De \ (Be * u + Ts - Ce*dq - Ge);
+    % dynamics
+    ddq = De \ (Be * u_ + v_taus - Ce*dq - Ge);
 
-dXdt = [dq;ddq];
+    dXdt(:,ii) = [dq;ddq];
+end
+end
