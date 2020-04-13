@@ -61,6 +61,7 @@ for ii = 1:N
     %Joint-level control
     Jc_HIP = fcn_J_toe_HIP(q,params);
     u_ = -Jc_HIP'*[Fx; Fz];    %Torques of joints 3 (hip) and 4 (knee)
+    u_ = fcn_constraints([q;dq], u_(1), u_(2)).';
     u(ii,:) = u_';
     F(ii,:) = [Fx Fz];
 
