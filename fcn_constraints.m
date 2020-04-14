@@ -1,127 +1,79 @@
-function [modified_tau] = fcn_constraints(X,tau_H, tau_K)
-%FCN_CONSTRAINTS Summary of this function goes here
-%   Detailed explanation goes here
+function [tau_H, tau_K] = fcn_constraints(q,dq, tau)
+%This function takes as input the robot states and torques and 
+%outputs values that satisfy the constraints
 
-tau_Imax = 0.162;
-omega_NL = 645.2;
-tau_stall = 0.124;
-N_H = 26.9;
-N_K = 28.8;
+%Initializations
+dq3 = dq(3);
+dq4 = dq(4);
 
-omega_H = X(7);
-omega_K = X(8);
+tau_H = tau(1);
+tau_K = tau(2);
 
-% constraints for hip actuator
-phi_1H = tau_H/N_H - tau_Imax <= 0 ;  
-phi_2H = -tau_H/N_H - tau_Imax <= 0 ;
-phi_3H = tau_H/N_H + tau_stall*N_H*omega_H/omega_NL - tau_stall <= 0;
-phi_4H = -tau_H/N_H - tau_stall*N_H*omega_H/omega_NL - tau_stall <= 0;
+theta3 = q(3); theta4 = q(4);
 
-% constraints for knee actuator
-phi_1K = tau_K/N_K - tau_Imax <= 0 ; 
-phi_2K = -tau_K/N_K - tau_Imax <= 0 ;
-phi_3K = tau_K/N_K + tau_stall*N_K*omega_K/omega_NL - tau_stall <= 0;
-phi_4K = -tau_K/N_K - tau_stall*N_K*omega_K/omega_NL - tau_stall <= 0;
+%Checking for motor operating regions
+valid = 1;
 
-if phi_1H && phi_2H && phi_3H && phi_4H
-    tau_H = tau_H;
-    tau_K = tau_K;
-else
-    
-    tau_H_original  = tau_H;
-    if ~phi_1H
-        tau_H = tau_Imax * N_H;
-    end
-    
-    if ~phi_2H
-        tau_H = -tau_Imax*N_H;
-    end
-    
-    if ~phi_3H
-        tau_H = (tau_stall - tau_stall*N_H*omega_H/omega_NL)*N_H;
-    end
-    
-    if ~phi_4H
-        tau_H = (tau_stall + tau_stall*N_H*omega_H/omega_NL)*N_H;
-    end
-    
-    % scale K according to H
-    tau_K = tau_H/ tau_H_original*tau_K;
+if check_motor_constraint(tau_H, tau_K, dq3, dq4) == 0
+    valid = 0;
 end
 
-if phi_1K && phi_2K && phi_3K && phi_4K
-    tau_H = tau_H;
-    tau_K = tau_K;
-else
-    
-    tau_K_original  = tau_K;
-    if ~phi_1K
-        tau_K = tau_Imax * N_K;
-    end
-    
-    if ~phi_2K
-        tau_K = -tau_Imax*N_K;
-    end
-    
-    if ~phi_3K
-        tau_K = (tau_stall - tau_stall*N_K*omega_K/omega_NL)*N_K;
-    end
-    
-    if ~phi_4K
-        tau_K = (tau_stall + tau_stall*N_K*omega_K/omega_NL)*N_K;
-    end
-    
-    % scale H according to K
-    tau_H = tau_K/ tau_K_original*tau_H;
+%Checking Contact Constraints
+
+if check_contact_constraint(tau_H, tau_K, q) == 0
+    valid = 0;
 end
 
+%Algorithm in case the constraints are not satisfied
 
-% theta3 = X(3);
-% theta4 = X(4);
-% 
-% %params value
-% L_H = 0.096;
-% L_K = 0.155;
-% D_K = 0.052;
-% L = sqrt(L_K^2+D_K^2);
-% mu = 0.6;
-% 
-% 
-% J_HIP =  [L_H*cos(theta3)+L*cos(theta3+theta4) L*cos(theta3+theta4); L_H*sin(theta3)+L*sin(theta3+theta4) L*sin(theta3+theta4)];
-% tau = [tau_H;tau_K];
-% 
-% F_GRF = transpose(J_HIP)\tau; % F_GRF = (J_HIP^T)^(-1)*tau
-% 
-% % constraints for ground reaction force
-% 
-% phi_1GRF = -F_GRF(2) <= 0; %positive vertical component
-% phi_2GRF = F_GRF(1)- mu*F_GRF(2) <= 0; % contraints on horizontal force due to friction
-% phi_3GRF = -F_GRF(1) - mu*F_GRF(2) <= 0;
-% 
-% if phi_1GRF && phi_2GRF && phi_3GRF
-%     tau_H = tau_H;
-%     tau_K = tau_K;
-% else
-%     if -F_GRF(2) <= 0
-%         F_GRF(1) = 0;
-%         F_GRF(2) = 0;
-%     end
-%     
-%     if F_GRF(1) > mu*F_GRF(2)
-%         F_GRF(1) = mu*F_GRF(2);
-%     end
-%     
-%     if F_GRF(1) < -mu*F_GRF(2)
-%         F_GRF(1) = -mu*F_GRF(2);
-%     end
-%     
-%     modified_tau = transpose(J_HIP)*F_GRF;
-%     tau_H = modified_tau(1);
-%     tau_K = modified_tau(2);
-% end
+%Parameters
+L_H = 0.096;
+L_K = 0.155;
+D_K = 0.052;
+L = sqrt(L_K^2+D_K^2);
+mu = 0.6;
 
 
-modified_tau = [tau_H tau_K];
+if valid == 0
+    
+    %Defining the hip jacobian
+    J_HIP =  [L_H*cos(theta3)+L*cos(theta3+theta4) L*cos(theta3+theta4); ...
+    L_H*sin(theta3)+L*sin(theta3+theta4) L*sin(theta3+theta4)];
+    
+    %Determining ground forces desired by the current torque
+    F_GRF = J_HIP'\tau;
+    
+    if F_GRF(2) > 0
+        F_GRF(2) = 0;
+    end
+    if abs(F_GRF(1)) > mu*abs(F_GRF(2))
+        F_GRF(1) = -sign(F_GRF(1))*(mu-0.05)*F_GRF(2);
+    end
+    
+    F_GRF_new = zeros(2,1);
+    
+    for i = 0:1:100
+           
+        F_GRF_new = (100-i)/100*F_GRF;
+        
+        %disp('Force');
+        %disp(F_GRF_new);
+        
+        tau_new = J_HIP'\F_GRF_new;
+        tau_H_new = tau_new(1); tau_K_new = tau_new(2);
+        
+        %disp('Torque:');
+        %disp(tau_new);
+        
+        if check_motor_constraint(tau_H_new, tau_K_new, dq3, dq4) == 1 && ...
+                check_contact_constraint(tau_H_new, tau_K_new, q) == 1
+            
+            tau_H = tau_H_new;
+            tau_K = tau_K_new;
+            
+            break;
+        end
+    end
 
 end
 
