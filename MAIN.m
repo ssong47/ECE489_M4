@@ -5,6 +5,16 @@ clc
 clear all
 close all
 
+global Torques
+global counter
+global Forces
+global omegas
+
+Torques = zeros(1000,2);
+Forces = zeros(1000,2);
+omegas = zeros(1000,2);
+counter = 0;
+
 addpath gen
 addpath fcns
 
@@ -27,7 +37,8 @@ ic = [q0; dq0];
 
 % Recording
 tstart = 0;
-tfinal = 2*Nstep;   %Maximum simulation time
+%tfinal = 2*Nstep;   %Maximum simulation time
+tfinal = 3;
 tout = tstart;
 Xout = ic';
 Uout = [0,0];
@@ -74,4 +85,9 @@ fprintf('Simulation Complete!\n')
 
 %% Visualing the motion
 [t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
+
+%%
+plot(Forces(:,1),Forces(:,2)); hold on;
+plot(Forces(:,1), Forces(:,1)/0.6);
+plot(Forces(:,1), -Forces(:,1)/0.6);
 

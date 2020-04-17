@@ -99,18 +99,61 @@ phi_1GRF = -F_GRF(2) <= 0; %positive vertical component
 phi_2GRF = F_GRF(1)- mu*F_GRF(2) <= 0; % contraints on horizontal force due to friction
 phi_3GRF = -F_GRF(1) - mu*F_GRF(2) <= 0;
 
+%% 1e
 
 
+subplot(2,1,1);
+hold on
+title('Operating region for hip actuator')
+%plot(Xout(:,7), Uout(:,1))
+plot(omegas(:,1), Torques(:,1));
+xlabel('\omega_H')
+ylabel('\tau_H')
+view(0,90);   % change to top view
+
+subplot(2,1,2);
+hold on
+title('Operating region for knee actuator')
+%plot(Xout(:,8), Uout(:,2))
+plot(omegas(:,2), Torques(:,2));
+xlabel('\omega_H')
+ylabel('\tau_H')
+view(0,90);   % change to top view
 
 
+figure
+title("grfy/grfx")
+
+%%
+
+%params value
+L_H = 0.096;
+L_K = 0.155;
+D_K = 0.052;
+L = sqrt(L_K^2+D_K^2);
+mu = 0.6;
 
 
+GRFs = []
 
+for i = 1:length(Uout)
+    theta3 = Xout(i,3);
+    theta4 = Xout(i,4);
+    J_HIP = [L_H*cos(theta3)+L*cos(theta3+theta4) L*cos(theta3+theta4); L_H*sin(theta3)+L*sin(theta3+theta4) L*sin(theta3+theta4)];
+    tau = Uout(i,:)';
+    F_GRF = J_HIP'\tau;
+    GRFs = [GRFs F_GRF];
+end
 
+% plot(GRFs(2,:),GRFs(1,:)); hold on;
+% title("Slope < 0.6")
+% plot(GRFs(2,:), -0.6*GRFs(2,:));
+% plot(GRFs(2,:), +0.6*GRFs(2,:));
 
-
-
-
-
-
+plot(Forces(:,1),Forces(:,2)); hold on;
+plot(Forces(:,1), Forces(:,1)/0.6, 'LineWidth', 2);
+plot(Forces(:,1), -Forces(:,1)/0.6, 'LineWidth', 2);
+title("F_Z vs F_Y");
+xlabel('F_Y (N)');
+ylabel('F_Z (N)');
 
