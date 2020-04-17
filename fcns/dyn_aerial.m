@@ -24,6 +24,7 @@ for ii = 1:N
 
     % swing controller
     qd = [pi/3; -pi*0.65];     % desired joint position
+    %qd = [pi/10, -30*pi/180];
     q1 = q(3);q2 = q(4);
     dq1 = dq(3);dq2 = dq(4);
 

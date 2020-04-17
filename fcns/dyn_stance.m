@@ -1,6 +1,10 @@
 function [dXdt,u,F] = dyn_stance(t,X,p)
 
 global Fz
+global Torques
+global counter
+global Forces
+global omegas
 
 % --- parameters ---
 params = p.params;
@@ -56,14 +60,22 @@ for ii = 1:N
     % Force profile using Bezier polynomials
     Fz = polyval_bz([0 0 120 0 0], s);
 %     Fx = 40*(0-q(1));
-    Fx = polyval_bz([0 0 0 0 0], s);
+    Fy = polyval_bz([0 0 0 0 0], s);
 
     %Joint-level control
     Jc_HIP = fcn_J_toe_HIP(q,params);
-    u_ = -Jc_HIP'*[Fx; Fz];    %Torques of joints 3 (hip) and 4 (knee)
-    u_ = fcn_constraints([q;dq], u_(1), u_(2)).';
+    u_ = -Jc_HIP'*[Fy; Fz];    %Torques of joints 3 (hip) and 4 (knee)
+    
+    u_ = quad_constraints(q,dq,u_);
+    
+    counter = counter + 1;
+    Torques(counter,1) = u_(1);
+    Torques(counter,2) = u_(2);
+    omegas(counter,1) = dq(3);
+    omegas(counter,2) = dq(4);
+    
     u(ii,:) = u_';
-    F(ii,:) = [Fx Fz];
+    F(ii,:) = [Fy Fz];
 
     % Solve the linear system:
     % De * ddq + Ce * dq + Ge = J' * GRF + Be * u (4 eqns)
@@ -84,6 +96,9 @@ for ii = 1:N
     ddq = ddqu(1:4);
     GRF = ddqu(5:6);
     Fz = GRF(2);
+    
+    Forces(counter,1) = GRF(1);
+    Forces(counter,2) = GRF(2);
 
     dXdt(:,ii) = [dq; ddq];
     
