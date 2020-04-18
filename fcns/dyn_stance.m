@@ -105,8 +105,8 @@ for ii = 1:N
     GRF = ddqu(5:6);
     Fz = GRF(2);
     
-    Forces(counter,1) = GRF(1);
-    Forces(counter,2) = GRF(2);
+    %Forces(counter,1) = GRF(1);
+    %Forces(counter,2) = GRF(2);
 
     dXdt(:,ii) = [dq; ddq];
     
