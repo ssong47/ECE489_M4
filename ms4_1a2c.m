@@ -156,4 +156,3 @@ plot(Forces(:,1), -Forces(:,1)/0.6, 'LineWidth', 2);
 title("F_Z vs F_Y");
 xlabel('F_Y (N)');
 ylabel('F_Z (N)');
-

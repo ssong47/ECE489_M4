@@ -32,13 +32,13 @@ f = -2*[Tau(1); Tau(2)];
 hip_motor_constraint = 1/N_H*[1 0; -1 0; 1 0; -1 0];
 knee_motor_constraint = 1/N_K*[0 1; 0 -1; 0 1; 0 -1];
 
-contact_constraint = [1 mu; 1 -mu;0 1]*(J_HIP')^-1;
+contact_constraint = [1 mu; -1 mu;0 1]*(J_HIP')^-1;
 
 hori_force_sign = -F_old(1)*[1 0]*(J_HIP')^-1;
 
-%A = [hip_motor_constraint; knee_motor_constraint; contact_constraint];
+A = [hip_motor_constraint; knee_motor_constraint; contact_constraint];
 %A = [hip_motor_constraint; knee_motor_constraint; contact_constraint; hori_force_sign];
-A = [hip_motor_constraint; knee_motor_constraint];
+%A = [hip_motor_constraint; knee_motor_constraint];
 %A = [contact_constraint];
 
 hip_limit = [tau_Imax; tau_Imax; tau_stall*(1-N_H*w_H/w_NL); ...
@@ -51,9 +51,9 @@ force_limit = [0;0;0];
 
 hori_limit = 0;
 
-%b = [hip_limit;knee_limit;force_limit];
+b = [hip_limit;knee_limit;force_limit];
 %b = [hip_limit;knee_limit;force_limit; hori_limit];
-b = [hip_limit;knee_limit];
+%b = [hip_limit;knee_limit];
 %b = [force_limit];
     
 options = optimoptions('quadprog','Display','off');

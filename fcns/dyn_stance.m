@@ -73,6 +73,14 @@ for ii = 1:N
     Torques(counter,2) = u_(2);
     omegas(counter,1) = dq(3);
     omegas(counter,2) = dq(4);
+    force_generated = (Jc_HIP')\u_;
+    Forces(counter,1) = force_generated(1);
+    Forces(counter,2) = force_generated(2);
+    
+    if force_generated(2) > 0.01
+        disp('Problem Here');
+        disp(force_generated(2));
+    end
     
     u(ii,:) = u_';
     F(ii,:) = [Fy Fz];
