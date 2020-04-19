@@ -25,8 +25,15 @@ J_HIP =  [L_H*cos(theta3)+L*cos(theta3+theta4) L*cos(theta3+theta4); ...
 F_old = (J_HIP')^-1*Tau;
 
 %Defining parameters for quadprog
-H = diag([2,2]);
-f = -2*[Tau(1); Tau(2)];
+H = [2 0; 0 2];
+f = -2*[Tau(1) Tau(2)];
+
+J_inverse_transpose = (J_HIP')^-1;
+J_row_1 = [J_inverse_transpose(1,:) ; 0 0];
+H = H + 2*J_row_1.'*J_row_1;
+c = -2*F_old(1)*J_inverse_transpose(1,:);
+f = f + c;
+
 
 %Constraints
 hip_motor_constraint = 1/N_H*[1 0; -1 0; 1 0; -1 0];

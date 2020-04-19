@@ -38,7 +38,7 @@ ic = [q0; dq0];
 % Recording
 tstart = 0;
 %tfinal = 2*Nstep;   %Maximum simulation time
-tfinal = 3;
+tfinal = 2.5;
 tout = tstart;
 Xout = ic';
 Uout = [0,0];

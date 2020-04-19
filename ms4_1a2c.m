@@ -96,8 +96,8 @@ F_GRF = transpose(J_HIP)\tau; % F_GRF = (J_HIP^T)^(-1)*tau
 % constraints for ground reaction force
 
 phi_1GRF = -F_GRF(2) <= 0; %positive vertical component
-phi_2GRF = F_GRF(1)- mu*F_GRF(2) <= 0; % contraints on horizontal force due to friction
-phi_3GRF = -F_GRF(1) - mu*F_GRF(2) <= 0;
+phi_2GRF = F_GRF(1)+ mu*F_GRF(2) <= 0; % contraints on horizontal force due to friction
+phi_3GRF = -F_GRF(1) + mu*F_GRF(2) <= 0;
 
 %% 1e
 

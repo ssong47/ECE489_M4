@@ -1,6 +1,7 @@
 function [tau_H, tau_K] = fcn_constraints(q,dq, tau)
 %This function takes as input the robot states and torques and 
 %outputs values that satisfy the constraints
+t
 
 %Initializations
 dq3 = dq(3);
