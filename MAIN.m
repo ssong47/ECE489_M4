@@ -9,6 +9,8 @@ global Torques
 global counter
 global Forces
 global omegas
+global Force_input
+
 
 Torques = zeros(1000,2);
 Forces = zeros(1000,2);
@@ -18,17 +20,18 @@ counter = 0;
 addpath gen
 addpath fcns
 
-global Fz
 
 fprintf('------ ME446 Milestone 4 -------\n')
 fprintf('Initializing ..............\n')
 
 % --- parameters ---
 p = get_params;     % Getting physical parameters of the robot
-Nstep = 5;          % number of desired hops
+Nstep = 10;          % number of desired hops
 
 % Initial condition
-q0 = [0; 0; pi/3; -pi/2]; %Joint angles
+q0 = [0; 0; pi/3.5; -pi/1.5]; %Joint angles for Knee forward
+% q0 = [0; 0; pi/3; -pi*0.65]; 
+% q0 = [0; 0; -pi/3; pi/2]; % Joint angles for Knee backward 
 dq0 = [0; 0; 0; 0];       %Joint velocities
 ic = [q0; dq0];
 
@@ -38,7 +41,7 @@ ic = [q0; dq0];
 % Recording
 tstart = 0;
 %tfinal = 2*Nstep;   %Maximum simulation time
-tfinal = 2.5;
+tfinal = 2*Nstep;
 tout = tstart;
 Xout = ic';
 Uout = [0,0];
@@ -87,7 +90,38 @@ fprintf('Simulation Complete!\n')
 [t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
 
 %%
+figure(2)
 plot(Forces(:,1),Forces(:,2)); hold on;
 plot(Forces(:,1), Forces(:,1)/0.6);
 plot(Forces(:,1), -Forces(:,1)/0.6);
+xlabel('Force_Y (N)');
+ylabel('Force_Z (N)');
+
+
+%% 
+figure(3)
+plot(Force_input(:,1))
+hold on;
+plot(Force_input(:,2));
+legend('Fy','Fz');
+ylabel('Force (N)');
+
+%% Part 2 
+time = tout;
+theta_1 = Xout(:,1);
+theta_dot = Xout(:,5);
+theta_dot_hip = Xout(:,7);
+theta_dot_knee = Xout(:,8);
+Nh = 26.9;
+Nk = 28.8;
+Rw = 1.3;
+kT = 0.0135;
+kv = 0.0186;
+voltage_hip = Uout(:,1)/(kT/Rw*Nh);
+voltage_knee = Uout(:,2)/(kT/Rw*Nk);
+
+plot_speed(time, theta_dot);
+[avg_velocity, max_velocity] = compute_velocity(theta_dot);
+[power, avg_power] = compute_power(voltage_hip, voltage_knee, theta_dot_hip, theta_dot_knee); 
+cost_transport = compute_cost_transport(theta_1,avg_power);
 

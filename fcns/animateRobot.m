@@ -1,9 +1,9 @@
 function [t,HIP] = animateRobot(tin,Xin,Uin,Fin,p)
 
 f = figure;
-% v = VideoWriter('video.avi');
-% open(v)
-% set(f, 'doublebuffer', 'on');
+v = VideoWriter('video.avi');
+open(v)
+set(f, 'doublebuffer', 'on');
 
 N = p.N_animate;
 R = 0.44;
@@ -81,14 +81,14 @@ for ii = 1:nt
     
     set(gca,'color','white')
     pause(0.0001)
-%     F = getframe(f);
+    Fra = getframe(f);
     if ii < nt
         clf
     end
-%     writeVideo(v,F)
+    writeVideo(v,Fra)
 end
 
-% close(v)
+close(v)
 
 
 

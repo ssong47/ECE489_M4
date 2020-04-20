@@ -1,12 +1,13 @@
 function [dXdt,u,F] = dyn_stance(t,X,p)
 
-t
 
 global Fz
+global Fy
 global Torques
 global counter
 global Forces
 global omegas
+global Force_input
 
 % --- parameters ---
 params = p.params;
@@ -60,9 +61,17 @@ for ii = 1:N
     % Feedforward force
     s = (t(ii) - tTD) / Tst;        % stance phase parametrization s = [0, 1]
     % Force profile using Bezier polynomials
-    Fz = polyval_bz([0 150 120 150 0], s);
-%     Fx = 40*(0-q(1));
-    Fy = polyval_bz([0 0 0 0 0], s);
+    % For knee forward case
+
+    Fz = polyval_bz([0 190 160 190 70], s);
+    Fy = polyval_bz([5 10 12 10 0], s);
+    
+    % For knee backward case 
+%     Fz = polyval_bz([0 150 120 150 0], s);
+%     Fy = polyval_bz([0 10 10 0 0], s);
+    
+    
+    
     
     if s > 1
         Fz = 0;
@@ -78,11 +87,14 @@ for ii = 1:N
     counter = counter + 1;
     Torques(counter,1) = u_(1);
     Torques(counter,2) = u_(2);
+   
     omegas(counter,1) = dq(3);
     omegas(counter,2) = dq(4);
     force_generated = (Jc_HIP')\u_;
     Forces(counter,1) = force_generated(1);
     Forces(counter,2) = force_generated(2);
+    Force_input(counter,1) = Fy;
+    Force_input(counter,2) = Fz;
     
     if force_generated(2) > 0.01
         disp('Problem Here');

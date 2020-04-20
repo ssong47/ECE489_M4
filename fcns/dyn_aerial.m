@@ -1,5 +1,6 @@
 function [dXdt,u,F] = dyn_aerial(t,X,p)
 
+
 params = p.params;
 
 [m,n] = size(X);
@@ -23,7 +24,9 @@ for ii = 1:N
     
 
     % swing controller
-    qd = [pi/3; -pi*0.65];     % desired joint position
+    qd = [pi/2.5; -pi*0.65];     % desired joint position Knee forward
+%     qd = [-pi/3; pi*0.65];     % desired joint position Knee backward 
+
     %qd = [pi/10, -30*pi/180];
     q1 = q(3);q2 = q(4);
     dq1 = dq(3);dq2 = dq(4);
@@ -31,6 +34,7 @@ for ii = 1:N
     % joint PD control during aerial phase
     u_ = [20*(qd(1)-q1) + 1*(0-dq1);...
           20*(qd(2)-q2) + 1*(0-dq2)];
+   
     F_sw = J_h2f_b(2:3,3:4)' \ u_;
 %     % swing controller
 %     Kp = diag(800*[1 1]);
@@ -55,5 +59,8 @@ for ii = 1:N
     ddq = De \ (Be * u_ + v_taus - Ce*dq - Ge);
 
     dXdt(:,ii) = [dq;ddq];
+    
+    
+    
 end
 end

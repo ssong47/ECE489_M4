@@ -48,11 +48,11 @@ A = [hip_motor_constraint; knee_motor_constraint; contact_constraint];
 %A = [hip_motor_constraint; knee_motor_constraint];
 %A = [contact_constraint];
 
-hip_limit = [tau_Imax; tau_Imax; tau_stall*(1-N_H*w_H/w_NL); ...
-                        tau_stall*(1+N_H*w_H/w_NL)];
+hip_limit = [tau_Imax; tau_Imax; tau_stall*(1 - N_H * w_H / w_NL); ...
+                        tau_stall*(1 + N_H * w_H / w_NL)];
 
-knee_limit = [tau_Imax; tau_Imax; tau_stall*(1-N_K*w_K/w_NL); ...
-                        tau_stall*(1+N_K*w_K/w_NL)];
+knee_limit = [tau_Imax; tau_Imax; tau_stall*(1 - N_K * w_K / w_NL); ...
+                        tau_stall*(1 + N_K * w_K / w_NL)];
 
 force_limit = [0;0;0];
 
