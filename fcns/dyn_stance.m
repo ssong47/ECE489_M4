@@ -63,12 +63,12 @@ for ii = 1:N
     % Force profile using Bezier polynomials
     % For knee forward case
 
-    Fz = polyval_bz([0 190 160 190 70], s);
-    Fy = polyval_bz([5 10 12 10 0], s);
-    
+%     Fz = polyval_bz([0 190 160 190 70], s);
+%     Fy = polyval_bz([5 10 12 10 0], s);
+%     
     % For knee backward case 
-%     Fz = polyval_bz([0 150 120 150 0], s);
-%     Fy = polyval_bz([0 10 10 0 0], s);
+    Fz = polyval_bz([0 150 120 150 0], s);
+    Fy = polyval_bz([0 10 10 0 0], s);
     
     
     
