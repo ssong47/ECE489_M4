@@ -29,7 +29,7 @@ p = get_params;     % Getting physical parameters of the robot
 Nstep = 10;          % number of desired hops
 
 % Initial condition
-% q0 = [0; 0; pi/3.5; -pi/1.5]; %Joint angles for Knee forward
+%q0 = [0; 0; pi/3.5; -pi/1.5]; %Joint angles for Knee forward
 q0 = [0; 0; -pi/3; pi/2]; % Joint angles for Knee backward 
 dq0 = [0; 0; 0; 0];       %Joint velocities
 ic = [q0; dq0];
@@ -131,10 +131,10 @@ for istep = 1:Nstep
 end
 fprintf('Simulation Complete!\n')
 
-% Visualing the motion
-% [t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
-
-%
+%% Visualing the motion
+ [t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
+% 
+% 
 % figure(2)
 % plot(Forces(:,1),Forces(:,2)); hold on;
 % plot(Forces(:,1), Forces(:,1)/0.6);
@@ -151,7 +151,7 @@ fprintf('Simulation Complete!\n')
 % legend('Fy','Fz');
 % ylabel('Force (N)');
 
-% Part 2 
+%% Part 2 
 LB = 0.5;
 time = tout;
 theta1_dot = Xout(:,5);
