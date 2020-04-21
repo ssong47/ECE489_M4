@@ -1,0 +1,252 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>motor_constraint_validity</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-04-21"><meta name="DC.source" content="motor_constraint_validity.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Plot for force region</a></li></ul></div><pre class="codeinput">L_H = 0.096;
+L_K = 0.155;
+D_K = 0.052;
+L = sqrt(L_K^2+D_K^2);
+mu = 0.6;
+tau_Imax = 0.162;
+w_NL = 645.2;
+tau_stall = 0.124;
+N_H = 26.9;
+N_K = 28.8;
+
+constr_tau_val = @(N,dq)N*[tau_Imax;
+                           -tau_Imax;<span class="keyword">...</span>
+                           (-tau_stall*dq*N/w_NL + tau_stall);<span class="keyword">...</span>
+                           (-tau_stall*dq*N/w_NL - tau_stall)];
+
+constraint1 = @(N, tau, dq)tau/N &lt;= tau_Imax;
+constraint2 = @(N, tau, dq)tau/N &gt;= -tau_Imax;
+constraint3 = @(N, tau, dq)tau/N &lt;= -tau_stall*dq*N/w_NL + tau_stall;
+constraint4 = @(N, tau, dq)tau/N &gt;= -tau_stall*dq*N/w_NL - tau_stall;
+
+constraint_valid = @(N,tau,dq)constraint1(N,tau,dq) &amp;&amp; <span class="keyword">...</span>
+                              constraint2(N,tau,dq) &amp;&amp; <span class="keyword">...</span>
+                              constraint3(N,tau,dq) &amp;&amp; <span class="keyword">...</span>
+                              constraint4(N,tau,dq);
+
+omega = [-100:0.001:100];
+counter_H = 1;
+counter_K = 1;
+points_omegaH = zeros(1,2*length(omega));
+points_tauH = zeros(1,2*length(omega));
+points_omegaK = zeros(1,2*length(omega));
+points_tauK = zeros(1,2*length(omega));
+
+
+<span class="keyword">for</span> i = 1:length(omega)
+
+    tau_H = constr_tau_val(N_H, omega(i));
+    tau_K = constr_tau_val(N_K, omega(i));
+
+    <span class="keyword">for</span> j = 1:4
+        <span class="comment">% Checking if the points are valid for hip motor</span>
+        <span class="keyword">if</span> constraint_valid(N_H, tau_H(j),omega(i))
+            points_tauH(counter_H) = tau_H(j);
+            points_omegaH(counter_H) = omega(i);
+            counter_H = counter_H + 1;
+        <span class="keyword">end</span>
+
+        <span class="comment">% Checking if points are valid for knee motor</span>
+        <span class="keyword">if</span> constraint_valid(N_K, tau_K(j),omega(i))
+            points_tauK(counter_K) = tau_K(j);
+            points_omegaK(counter_K) = omega(i);
+            counter_K = counter_K + 1;
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="comment">%Plot for hip actuator</span>
+subplot(1,2,1);
+
+scatter(points_omegaH(1:counter_H-1), points_tauH(1:counter_H-1),1); hold <span class="string">on</span>;
+scatter(omegas(1:counter,1),Torques(1:counter,1),5);
+legend(<span class="string">'Operating Region'</span>, <span class="string">'Simulation'</span>);
+
+title(<span class="string">'Operating Region for Hip Actuator'</span>, <span class="string">'FontSize'</span>, 15);
+xlabel(<span class="string">'\omega_H (rad/s)'</span>, <span class="string">'FontSize'</span>, 15);
+ylabel(<span class="string">'Tau_H (Nm)'</span>);
+xlim([-60,60]);
+
+<span class="comment">% Plot for knee actuator</span>
+subplot(1,2,2);
+scatter(points_omegaK(1:counter_K-1), points_tauK(1:counter_K-1),1); hold <span class="string">on</span>;
+scatter(omegas(1:counter,2),Torques(1:counter,2),5);
+legend(<span class="string">'Operating Region'</span>, <span class="string">'Simulation'</span>);
+
+title(<span class="string">'Operating Region for Knee Actuator'</span>, <span class="string">'FontSize'</span>, 15);
+xlabel(<span class="string">'\omega_K (rad/s)'</span>, <span class="string">'FontSize'</span>, 15);
+ylabel(<span class="string">'Tau_K (Nm)'</span>);
+xlim([-60,60]);
+</pre><img vspace="5" hspace="5" src="motor_constraint_validity_01.png" alt=""> <h2 id="2">Plot for force region</h2><pre class="codeinput">figure
+plot(Forces(1:counter,1), -Forces(1:counter,2)); hold <span class="string">on</span>
+plot([0:0.01:50],1/0.6*[0:0.01:50], <span class="string">'LineWidth'</span>, 2);
+plot([-50:0.01:0],-1/0.6*[-50:0.01:0], <span class="string">'LineWidth'</span>, 2, <span class="string">'Color'</span>, [0.8500,0.3250,0.0980]);
+
+legend(<span class="string">'GRF Trajectory'</span>, <span class="string">'Permitted Region'</span>, <span class="string">'FontSize'</span>, 15,<span class="string">'Location'</span>, <span class="string">'NorthWest'</span>);
+title(<span class="string">'GRF and Contact Constraint'</span>, <span class="string">'FontSize'</span>, 15);
+xlabel(<span class="string">'F_Y (N)'</span>, <span class="string">'FontSize'</span>, 15);
+ylabel(<span class="string">'F_Z (N)'</span>, <span class="string">'FontSize'</span>, 15);
+</pre><img vspace="5" hspace="5" src="motor_constraint_validity_02.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+L_H = 0.096;
+L_K = 0.155;
+D_K = 0.052;
+L = sqrt(L_K^2+D_K^2);
+mu = 0.6;
+tau_Imax = 0.162;
+w_NL = 645.2;
+tau_stall = 0.124;
+N_H = 26.9;
+N_K = 28.8;
+
+constr_tau_val = @(N,dq)N*[tau_Imax;
+                           -tau_Imax;...
+                           (-tau_stall*dq*N/w_NL + tau_stall);...
+                           (-tau_stall*dq*N/w_NL - tau_stall)];
+
+constraint1 = @(N, tau, dq)tau/N <= tau_Imax;
+constraint2 = @(N, tau, dq)tau/N >= -tau_Imax;
+constraint3 = @(N, tau, dq)tau/N <= -tau_stall*dq*N/w_NL + tau_stall;
+constraint4 = @(N, tau, dq)tau/N >= -tau_stall*dq*N/w_NL - tau_stall;
+
+constraint_valid = @(N,tau,dq)constraint1(N,tau,dq) && ...
+                              constraint2(N,tau,dq) && ...
+                              constraint3(N,tau,dq) && ...
+                              constraint4(N,tau,dq);   
+
+omega = [-100:0.001:100];
+counter_H = 1;
+counter_K = 1;
+points_omegaH = zeros(1,2*length(omega));
+points_tauH = zeros(1,2*length(omega));
+points_omegaK = zeros(1,2*length(omega));
+points_tauK = zeros(1,2*length(omega));
+
+
+for i = 1:length(omega)
+    
+    tau_H = constr_tau_val(N_H, omega(i));
+    tau_K = constr_tau_val(N_K, omega(i));
+    
+    for j = 1:4
+        % Checking if the points are valid for hip motor
+        if constraint_valid(N_H, tau_H(j),omega(i))
+            points_tauH(counter_H) = tau_H(j);
+            points_omegaH(counter_H) = omega(i);
+            counter_H = counter_H + 1;
+        end
+        
+        % Checking if points are valid for knee motor
+        if constraint_valid(N_K, tau_K(j),omega(i))
+            points_tauK(counter_K) = tau_K(j);
+            points_omegaK(counter_K) = omega(i);
+            counter_K = counter_K + 1;
+        end
+    end
+    
+end    
+
+%Plot for hip actuator
+subplot(1,2,1);
+
+scatter(points_omegaH(1:counter_H-1), points_tauH(1:counter_H-1),1); hold on;
+scatter(omegas(1:counter,1),Torques(1:counter,1),5); 
+legend('Operating Region', 'Simulation');
+
+title('Operating Region for Hip Actuator', 'FontSize', 15);
+xlabel('\omega_H (rad/s)', 'FontSize', 15);
+ylabel('Tau_H (Nm)');
+xlim([-60,60]);
+
+% Plot for knee actuator
+subplot(1,2,2);
+scatter(points_omegaK(1:counter_K-1), points_tauK(1:counter_K-1),1); hold on;
+scatter(omegas(1:counter,2),Torques(1:counter,2),5); 
+legend('Operating Region', 'Simulation');
+
+title('Operating Region for Knee Actuator', 'FontSize', 15);
+xlabel('\omega_K (rad/s)', 'FontSize', 15);
+ylabel('Tau_K (Nm)');
+xlim([-60,60]);
+
+%% Plot for force region
+figure
+plot(Forces(1:counter,1), -Forces(1:counter,2)); hold on
+plot([0:0.01:50],1/0.6*[0:0.01:50], 'LineWidth', 2);
+plot([-50:0.01:0],-1/0.6*[-50:0.01:0], 'LineWidth', 2, 'Color', [0.8500,0.3250,0.0980]);
+
+legend('GRF Trajectory', 'Permitted Region', 'FontSize', 15,'Location', 'NorthWest');
+title('GRF and Contact Constraint', 'FontSize', 15);
+xlabel('F_Y (N)', 'FontSize', 15);
+ylabel('F_Z (N)', 'FontSize', 15);
+##### SOURCE END #####
+--></body></html>

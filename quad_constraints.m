@@ -34,7 +34,6 @@ H = H + 2*J_row_1.'*J_row_1;
 c = -2*F_old(1)*J_inverse_transpose(1,:);
 f = f + c;
 
-
 %Constraints
 hip_motor_constraint = 1/N_H*[1 0; -1 0; 1 0; -1 0];
 knee_motor_constraint = 1/N_K*[0 1; 0 -1; 0 1; 0 -1];

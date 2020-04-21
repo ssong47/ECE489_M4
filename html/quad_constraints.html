@@ -1,0 +1,225 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>quad_constraints</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-04-21"><meta name="DC.source" content="quad_constraints.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> Tau_new = quad_constraints(q,dq, Tau)
+<span class="comment">%This function uses quadratic programming to find the point in the</span>
+<span class="comment">%feasible set that minimizes ||(Tau_new - Tau)||</span>
+
+<span class="comment">%Parameters</span>
+L_H = 0.096;
+L_K = 0.155;
+D_K = 0.052;
+L = sqrt(L_K^2+D_K^2);
+mu = 0.6;
+tau_Imax = 0.162;
+w_NL = 645.2;
+tau_stall = 0.124;
+N_H = 26.9;
+N_K = 28.8;
+
+theta3 = q(3);
+theta4 = q(4);
+w_H = dq(3);
+w_K = dq(4);
+<span class="comment">%Foot Jacobian w.r.t the hip</span>
+J_HIP =  [L_H*cos(theta3)+L*cos(theta3+theta4) L*cos(theta3+theta4); <span class="keyword">...</span>
+    L_H*sin(theta3)+L*sin(theta3+theta4) L*sin(theta3+theta4)];
+
+F_old = (J_HIP')^-1*Tau;
+
+<span class="comment">%Defining parameters for quadprog</span>
+H = [2 0; 0 2];
+f = -2*[Tau(1) Tau(2)];
+
+J_inverse_transpose = (J_HIP')^-1;
+J_row_1 = [J_inverse_transpose(1,:) ; 0 0];
+H = H + 2*J_row_1.'*J_row_1;
+c = -2*F_old(1)*J_inverse_transpose(1,:);
+f = f + c;
+
+<span class="comment">%Constraints</span>
+hip_motor_constraint = 1/N_H*[1 0; -1 0; 1 0; -1 0];
+knee_motor_constraint = 1/N_K*[0 1; 0 -1; 0 1; 0 -1];
+
+contact_constraint = [1 mu; -1 mu;0 1]*(J_HIP')^-1;
+
+hori_force_sign = -F_old(1)*[1 0]*(J_HIP')^-1;
+
+A = [hip_motor_constraint; knee_motor_constraint; contact_constraint];
+<span class="comment">%A = [hip_motor_constraint; knee_motor_constraint; contact_constraint; hori_force_sign];</span>
+<span class="comment">%A = [hip_motor_constraint; knee_motor_constraint];</span>
+<span class="comment">%A = [contact_constraint];</span>
+
+hip_limit = [tau_Imax; tau_Imax; tau_stall*(1 - N_H * w_H / w_NL); <span class="keyword">...</span>
+                        tau_stall*(1 + N_H * w_H / w_NL)];
+
+knee_limit = [tau_Imax; tau_Imax; tau_stall*(1 - N_K * w_K / w_NL); <span class="keyword">...</span>
+                        tau_stall*(1 + N_K * w_K / w_NL)];
+
+force_limit = [0;0;0];
+
+hori_limit = 0;
+
+b = [hip_limit;knee_limit;force_limit];
+<span class="comment">%b = [hip_limit;knee_limit;force_limit; hori_limit];</span>
+<span class="comment">%b = [hip_limit;knee_limit];</span>
+<span class="comment">%b = [force_limit];</span>
+
+options = optimoptions(<span class="string">'quadprog'</span>,<span class="string">'Display'</span>,<span class="string">'off'</span>);
+Tau_new = quadprog(H,f,A,b,[],[],[],[],[],options);
+
+<span class="keyword">if</span> length(Tau_new) == 0
+    Tau_new = [0;0];
+<span class="keyword">end</span>
+
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in quad_constraints (line 17)
+theta3 = q(3);
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function Tau_new = quad_constraints(q,dq, Tau)
+%This function uses quadratic programming to find the point in the 
+%feasible set that minimizes ||(Tau_new - Tau)||
+
+%Parameters
+L_H = 0.096;
+L_K = 0.155;
+D_K = 0.052;
+L = sqrt(L_K^2+D_K^2);
+mu = 0.6;
+tau_Imax = 0.162;
+w_NL = 645.2;
+tau_stall = 0.124;
+N_H = 26.9;
+N_K = 28.8;
+
+theta3 = q(3);
+theta4 = q(4);
+w_H = dq(3);
+w_K = dq(4);
+%Foot Jacobian w.r.t the hip
+J_HIP =  [L_H*cos(theta3)+L*cos(theta3+theta4) L*cos(theta3+theta4); ...
+    L_H*sin(theta3)+L*sin(theta3+theta4) L*sin(theta3+theta4)];
+
+F_old = (J_HIP')^-1*Tau;
+
+%Defining parameters for quadprog
+H = [2 0; 0 2];
+f = -2*[Tau(1) Tau(2)];
+
+J_inverse_transpose = (J_HIP')^-1;
+J_row_1 = [J_inverse_transpose(1,:) ; 0 0];
+H = H + 2*J_row_1.'*J_row_1;
+c = -2*F_old(1)*J_inverse_transpose(1,:);
+f = f + c;
+
+%Constraints
+hip_motor_constraint = 1/N_H*[1 0; -1 0; 1 0; -1 0];
+knee_motor_constraint = 1/N_K*[0 1; 0 -1; 0 1; 0 -1];
+
+contact_constraint = [1 mu; -1 mu;0 1]*(J_HIP')^-1;
+
+hori_force_sign = -F_old(1)*[1 0]*(J_HIP')^-1;
+
+A = [hip_motor_constraint; knee_motor_constraint; contact_constraint];
+%A = [hip_motor_constraint; knee_motor_constraint; contact_constraint; hori_force_sign];
+%A = [hip_motor_constraint; knee_motor_constraint];
+%A = [contact_constraint];
+
+hip_limit = [tau_Imax; tau_Imax; tau_stall*(1 - N_H * w_H / w_NL); ...
+                        tau_stall*(1 + N_H * w_H / w_NL)];
+
+knee_limit = [tau_Imax; tau_Imax; tau_stall*(1 - N_K * w_K / w_NL); ...
+                        tau_stall*(1 + N_K * w_K / w_NL)];
+
+force_limit = [0;0;0];
+
+hori_limit = 0;
+
+b = [hip_limit;knee_limit;force_limit];
+%b = [hip_limit;knee_limit;force_limit; hori_limit];
+%b = [hip_limit;knee_limit];
+%b = [force_limit];
+    
+options = optimoptions('quadprog','Display','off');
+Tau_new = quadprog(H,f,A,b,[],[],[],[],[],options);
+
+if length(Tau_new) == 0
+    Tau_new = [0;0];
+end
+
+
+end
+
+
+
+##### SOURCE END #####
+--></body></html>

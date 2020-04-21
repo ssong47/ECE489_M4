@@ -133,7 +133,7 @@ end
 fprintf('Simulation Complete!\n')
 
 %% Visualing the motion
- [t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
+% [t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
 % 
 % 
 % figure(2)
