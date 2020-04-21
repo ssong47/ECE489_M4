@@ -68,8 +68,8 @@ for ii = 1:N
 %     
     % For knee backward case 
     Fz = polyval_bz([0 150 120 150 0], s);
-    Fy = polyval_bz([0 10 10 0 0], s); 
-    
+    Fy = polyval_bz([0 -10 -10 0 0], s);
+        
     
     if s > 1
         Fz = 0;
