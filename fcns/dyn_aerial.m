@@ -25,7 +25,7 @@ for ii = 1:N
 
     % swing controller
 %     qd = [pi/2.5; -pi*0.65];     % desired joint position Knee forward
-    qd = [-pi/3; pi*0.65];     % desired joint position Knee backward 
+    qd = [pi/3; -pi*0.65];     % desired joint position Knee backward 
 
     %qd = [pi/10, -30*pi/180];
     q1 = q(3);q2 = q(4);

@@ -1,6 +1,6 @@
 function plot_speed(time, theta_dot)
 
-%% Plot speed (l*theta_dot) vs time 
+% Plot speed (l*theta_dot) vs time 
 L_B = 0.5; % meters
 velocity = L_B * theta_dot;
 

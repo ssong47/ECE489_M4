@@ -30,7 +30,7 @@ Nstep = 10;          % number of desired hops
 
 % Initial condition
 % q0 = [0; 0; pi/3.5; -pi/1.5]; %Joint angles for Knee forward
-q0 = [0; 0; -pi/3; pi/2]; % Joint angles for Knee backward 
+q0 = [0; 0; pi/3; -pi/2]; % Joint angles for Knee backward 
 dq0 = [0; 0; 0; 0];       %Joint velocities
 ic = [q0; dq0];
 
@@ -134,37 +134,15 @@ fprintf('Simulation Complete!\n')
 % Visualing the motion
 % [t,HIP] = animateRobot(tout,Xout,Uout,Fout,p);
 
-%
-% figure(2)
-% plot(Forces(:,1),Forces(:,2)); hold on;
-% plot(Forces(:,1), Forces(:,1)/0.6);
-% plot(Forces(:,1), -Forces(:,1)/0.6);
-% xlabel('Force_Y (N)');
-% ylabel('Force_Z (N)');
-% 
-% 
-% 
-% figure(3)
-% plot(Force_input(:,1))
-% hold on;
-% plot(Force_input(:,2));
-% legend('Fy','Fz');
-% ylabel('Force (N)');
+
 
 % Part 2 
 LB = 0.5;
 time = tout;
 theta1_dot = Xout(:,5);
-
 plot_speed(time, theta1_dot);
-
-figure(3)
-plot(time_single_hop, theta1_dot_single_hop*LB);
-hold on;
-plot(time_single_hop, theta_dot_hip);
-plot(time_single_hop, theta_dot_knee);
-legend('theta_1','theta_hip','theta_knee');
-
+theta_dot_hip = theta_dot_hip * Nh;
+theta_dot_knee = theta_dot_knee * Nk;
 [avg_velocity, max_velocity] = compute_velocity(theta1_dot_single_hop);
 [power, avg_power] = compute_power(voltage_hip, voltage_knee, theta_dot_hip, theta_dot_knee); 
 cost_transport = compute_cost_transport(theta_1,avg_power);

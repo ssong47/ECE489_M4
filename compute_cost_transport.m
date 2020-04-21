@@ -1,6 +1,6 @@
 function cost_transport = compute_cost_transport(theta_1,avg_power)
 
-%% Computes the cost of transportation. 
+% Computes the cost of transportation. 
 
 M = 1.336595; % kg
 g = 9.81; % m/s
